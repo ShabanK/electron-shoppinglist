@@ -4,6 +4,9 @@ const path = require("path");
 
 const { app, BrowserWindow, Menu, ipcMain } = electron;
 
+//set env
+process.env.NODE_ENV = "production";
+
 let mainWindow;
 
 app.on("ready", function() {
@@ -36,6 +39,7 @@ function createAddWindow() {
     title: "Add Shopping List Item",
     webPreferences: { nodeIntegration: true }
   });
+  addWindow.setMenu(null);
   addWindow.loadURL(
     url.format({
       pathname: path.join(__dirname, "addWindow.html"),
