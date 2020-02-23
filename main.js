@@ -2,12 +2,14 @@ const electron = require("electron");
 const url = require("url");
 const path = require("path");
 
-const { app, BrowserWindow, Menu } = electron;
+const { app, BrowserWindow, Menu, ipcMain } = electron;
 
 let mainWindow;
 
 app.on("ready", function() {
-  mainWindow = new BrowserWindow({});
+  mainWindow = new BrowserWindow({
+    webPreferences: { nodeIntegration: true }
+  });
   mainWindow.loadURL(
     url.format({
       pathname: path.join(__dirname, "mainWindow.html"),
@@ -31,7 +33,8 @@ function createAddWindow() {
   addWindow = new BrowserWindow({
     width: 300,
     height: 200,
-    title: "Add Shopping List Item"
+    title: "Add Shopping List Item",
+    webPreferences: { nodeIntegration: true }
   });
   addWindow.loadURL(
     url.format({
@@ -46,6 +49,13 @@ function createAddWindow() {
   });
 }
 
+//catch item:add
+ipcMain.on("item:add", function(e, item) {
+  console.log(item);
+  mainWindow.webContents.send("item:add", item);
+  addWindow.close();
+});
+
 const mainMenuTemplate = [
   {
     label: "File",
@@ -57,7 +67,13 @@ const mainMenuTemplate = [
           createAddWindow();
         }
       },
-      { label: "Clear Items" },
+      {
+        label: "Clear Items",
+        accelerator: process.platform == "darwin" ? "Command+P" : "Ctrl+P",
+        click() {
+          mainWindow.webContents.send("item:clear");
+        }
+      },
       {
         label: "Quit",
         accelerator: process.platform == "darwin" ? "Command+Q" : "Ctrl+Q",
